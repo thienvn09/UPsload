@@ -1,0 +1,13 @@
+﻿@model DoAn.Models.Momo.Momoinfo
+
+<head>
+    <meta charset="utf-8" />
+    <title>Thông Tin Đơn Hàng</title>
+</head>
+<body>
+    <h1>Thông Tin Đơn Hàng</h1>
+    <p><strong>Order ID:</strong> @Model.OrderId</p>
+    <p><strong>Order Info:</strong> @Model.OrderInfo</p>
+    <p><strong>Amount:</strong> @Model.Amount.ToString("C")</p>
+    <p><strong>Datetime:</strong> @Model.datetime.ToString("yyyy-MM-dd HH:mm:ss")</p>
+</body>

@@ -1,0 +1,45 @@
+﻿@model DoAn.Models.Momo.Momoinfo
+
+@{
+    ViewData["Title"] = "Kết quả thanh toán";
+}
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Cart</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item"><a href="#">Pages</a></li>
+        <li class="breadcrumb-item active text-white">Cart</li>
+    </ol>
+</div>
+<div class="container py-5">
+    <div class="alert alert-success" role="alert">
+        <h2>Thanh toán thành công</h2>
+        <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Dưới đây là thông tin chi tiết giao dịch:</p>
+    </div>
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <th scope="row">Tên khách hàng</th>
+                <td>@Model.Name</td>
+            </tr>
+            <tr>
+                <th scope="row">Mã đơn hàng</th>
+                <td>@Model.OrderId</td>
+            </tr>
+            <tr>
+                <th scope="row">Thông tin đơn hàng</th>
+                <td>@Model.OrderInfo</td>
+            </tr>
+            <tr>
+                <th scope="row">Số tiền</th>
+                <td>@Model.Amount.ToString("#,##0 VND")</td>
+            </tr>
+            <tr>
+                <th scope="row">Thời gian</th>
+                <td>@Model.datetime.ToString("dd/MM/yyyy HH:mm:ss")</td>
+            </tr>
+        </tbody>
+    </table>
+    <a href="/" class="btn btn-primary mt-4">Quay lại trang chủ</a>
+</div>

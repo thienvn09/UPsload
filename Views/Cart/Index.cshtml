@@ -1,0 +1,281 @@
+﻿@model IEnumerable<DoAn.Models.CartItem>
+
+<!-- Single Page Header start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Cart</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item"><a href="#">Pages</a></li>
+        <li class="breadcrumb-item active text-white">Cart</li>
+    </ol>
+</div>
+<!-- Single Page Header End -->
+<!-- Cart Page Start -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <!-- Alert Success Start -->
+        @if (!string.IsNullOrWhiteSpace(TempData["CheckOutSuccessMessage"]?.ToString()))
+        {
+            <div class="w-100 d-flex justify-content-end">
+                <div class="alert alert-success alert-dismissible fade show r-0 mr-5" role="alert" id="alert_message" style="width:40%">
+                    <strong>Success!</strong>
+                    @TempData["CheckOutSuccessMessage"]?.ToString()
+                    <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+        <!-- Alert Success End -->
+        <!-- Alert Error Start -->
+        @if (!string.IsNullOrWhiteSpace(TempData["CheckOutErrorMessage"]?.ToString()))
+        {
+            <div class="w-100 d-flex justify-content-end">
+                <div class="alert alert-danger alert-dismissible fade show r-0 mr-5" role="alert" id="alert_message" style="width:40%">
+                    <strong>Error!</strong>
+                    @TempData["CheckOutErrorMessage"]?.ToString()
+                    <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        }
+        <!-- Alert Error End -->
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Ảnh</th>
+                        <th scope="col">Tên </th>
+                        <th scope="col">Giá </th>
+                        <th scope="col">Số lượng</th>
+                        <th scope="col">Tổng giá</th>
+                        <th scope="col">chức năng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr id="idProduct-@item.IdProduct">
+                            <th scope="row">
+                                <div class="d-flex align-items-center">
+                                    <img src="~/images/SanPham/@item.Img" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="@item.Img">
+                                </div>
+                            </th>
+                            <td>
+                                <p class="mb-0 mt-4">@item.Name</p>
+                            </td>
+                            <td>
+                                <p class="mb-0 mt-4">@item.Price.ToString("#,##0 VND")</p>
+                            </td>
+                            <td>
+                                <div class="input-group quantity mt-4" style="width: 100px;">
+                                    <div class="input-group-btn">
+                                        <button product-id="@item.IdProduct"
+                                                onclick="clickBtnQuantity(@item.IdProduct,false)"
+                                                class="btn btn-sm btn-minus rounded-circle bg-light border">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                    <input type="text"
+                                           id="quantityProduct"
+                                           product-id-input="@item.IdProduct"
+                                           class="form-control form-control-sm text-center border-0"
+                                           value="@item.Quantity">
+                                    <div class="input-group-btn">
+                                        <button product-id="@item.IdProduct" onclick="clickBtnQuantity(@item.IdProduct,true)"
+                                                class="btn btn-sm btn-plus rounded-circle bg-light border">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <p id="totalProduct-@item.IdProduct" class="mb-0 mt-4">@item.Total.ToString("#,##0 VND")</p>
+                            </td>
+                            <td>
+                                <button onclick="clickDeleteProduct(@item.IdProduct)"
+                                        class="btn btn-md rounded-circle bg-light border mt-4">
+                                    <i class="fa fa-times text-danger"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row g-4 justify-content-end">
+            <!-- Checkout Form -->
+            <h3 class="mt-4">Thanh Toán</h3>
+            <form asp-controller="Cart" asp-action="CheckOut" method="post">
+                @Html.AntiForgeryToken()
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="orderName" class="form-label">Tên Đơn Hàng</label>
+                        <input type="text" name="OrderName" id="orderName" class="form-control" value="@User.Identity.Name" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="orderDescription" class="form-label">Ghi Chú</label>
+                        <textarea name="OrderDescription" id="orderDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div id="totalCheckout" class="py-4 mb-4 border-top border-bottom d-flex justify-content-between">
+                            <h5 class="mb-0 ps-4 me-4">Tổng tiền</h5>
+                            <p class="mb-0 pe-4">@Model.Sum(p => p.Total).ToString("#,##0 VND")</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phương Thức Thanh Toán</label>
+                        <div class="form-check">
+                            <input type="radio" id="momo" name="PaymentMethod" value="momo" class="form-check-input" required />
+                            <label for="momo" class="form-check-label">MoMo</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" id="cod" name="PaymentMethod" value="cod" class="form-check-input" required />
+                            <label for="cod" class="form-check-label">Thanh Toán Khi Nhận Hàng</label>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Thanh Toán</button>
+                    </div>
+                </div>
+
+                @* Hidden fields to capture user information from the session *@
+                @Html.Hidden("CustomerId", User.FindFirst("CustomerId"))
+                @Html.Hidden("FirstName", User.FindFirst("FirstName"))
+                @Html.Hidden("LastName", User.FindFirst("LastName"))
+                @Html.Hidden("Phone", User.FindFirst("Phone"))
+                @Html.Hidden("Email", User.FindFirst("Email"))
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Cart Page End -->
+
+<script>
+
+    // ------------- Auto Close Alert Start----------------
+    const alert_error = document.getElementById("alert_message")
+    window.setTimeout(function () {
+        $(".alert").fadeTo(500, 0).slideUp(500, function () {
+            $(this).remove();
+        });
+    }, 2000);
+    // ------------- Auto Close Alert End----------------
+
+    //------------- Delete Product Start ---------------
+    function clickDeleteProduct(idProduct) {
+        $.ajax({
+            url: '@Url.Action("RemoveCart", "Cart")',
+            data: { id: idProduct },
+            success: function (data) {
+                console.log("Delete Success ", idProduct);
+                //Không hiển thị hàng hóa đó nữa
+                const idName = "#idProduct-" + idProduct;
+                console.log(idName);
+                $(idName).remove();
+
+                //Load lại tổng tiền thanh toán
+                $.ajax({
+                    url: '@Url.Action("GetTotalAmount", "Cart")',
+                    success: function (total) {
+                        $("#totalCheckout p").text(total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND");
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        alert("Error updating total amount.");
+                    }
+                });
+                //Load lại Cart ViewComponent
+                $.ajax({
+                    url: '@Url.Action("RefreshCartViewComponent", "Cart")',
+                    success: function (data) {
+                        console.log(data)
+                        $("#cart_view_component").html(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(thrownError)
+                        alert("Error updating Cart ViewComponent.");
+                    }
+                });
+
+
+                //call is successfully completed and we got result in data
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //some errror, some show err msg to user and log the error
+                alert(xhr.responseText);
+            }
+        });
+    }
+    //------------- Delete Product End ---------------
+        // ----------- Change Quantity With Two Buttons Start -----------------
+
+    function clickBtnQuantity(productId , increment) {
+        // increment = true -> Nhấn button Tăng số lượng
+        // increment = false -> Nhấn button Giảm số lượng
+
+        // Lấy product-id từ nút được nhấn
+        console.log("productId ", productId);
+        // Ví dụ: Hiển thị productId và giá trị increment trong console
+        console.log('Product ID:', productId);
+        console.log('Increment:', increment);
+
+        // Ajax gọi action ChangeQuantityCart trong Cart Controller
+        $.ajax({
+            url: '@Url.Action("ChangeQuantityCart", "Cart")',
+            data: { id: productId, isIncrement: increment, quantity: 1 },
+            success: function (data) {
+                console.log("ChangeQuantityCart Success ", productId, ' Increment: ', increment);
+
+                //Lấy giá trị trong ô Input theo ProductId
+                const queryString = '[product-id-input="' + productId + '"]';
+                const inputValue = document.querySelectorAll(queryString)[0].value;
+                // Nếu giá trị trong ô Input <= 0 thì remove hàng hóa đó
+                if (inputValue <= 0) {
+                    const idName = "#idProduct-" + productId;
+                    $(idName).remove();
+                } else {
+                    //Load lại tổng tiền theo từng Product
+                    $.ajax({
+                        url: '@Url.Action("GetTotalProduct", "Cart")',
+                        data: { idProduct: productId },
+                        success: function (total) {
+                            $("#totalProduct-" + productId).text(total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND");
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            alert("Error updating total amount.");
+                        }
+                    });
+                }
+
+                //Load lại tổng tiền thanh toán
+                $.ajax({
+                    url: '@Url.Action("GetTotalAmount", "Cart")',
+                    success: function (total) {
+                        $("#totalCheckout p").text(total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " VND");
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        alert("Error updating total amount.");
+                    }
+                });
+
+                //Load lại Cart ViewComponent
+                $.ajax({
+                    url: '@Url.Action("RefreshCartViewComponent", "Cart")',
+                    success: function (data) {
+                        console.log(data)
+                        $("#cart_view_component").html(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(thrownError)
+                        alert("Error updating Cart ViewComponent.");
+                    }
+                });
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //some errror, some show err msg to user and log the error
+                alert(xhr.responseText);
+            }
+        });
+    }// --------------- Change Quantity With Two Buttons End ---------------
+
+
+</script>
